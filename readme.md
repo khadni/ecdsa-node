@@ -13,3 +13,28 @@ However, something that we would like to incoporate is Public Key Cryptography. 
 
 ### Tools
 - [ethereum-cryptography](/ethereum/js-ethereum-cryptography): All pure-js cryptographic primitives
+
+---
+
+### In this version:
+- Public keys are derived from private keys. `keysGenerator.js` under the scripts folder allows to generate private keys, using [ethereum-cryptography](/ethereum/js-ethereum-cryptography) `secp256k1`.
+	
+~~~~
+const secp = require("ethereum-cryptography/secp256k1");
+const { toHex } = require("ethereum-cryptography/utils");
+const { keccak256 } = require("ethereum-cryptography/keccak");
+
+const privateKey = secp.utils.randomPrivateKey();
+
+// public key derived from private key
+const fullPublicKey = secp.getPublicKey(privateKey);
+
+// public key "ethereum" way
+const publicKey = keccak256(fullPublicKey).slice(-20);
+	
+~~~~
+- Users have to input their private key. This is **NOT** secured. **NEVER** input your private key on a client. This is only for educational purposes. Ideally:
+  * The signature should be computed offline,
+  * The signature is passed through the client,
+  * The server gets the signature and derives the address.
+This method will be implemented in a second version, using secp256k1 `secp.recoverPublicKey()` function.
