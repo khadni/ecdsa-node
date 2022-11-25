@@ -1,15 +1,20 @@
+import { useEffect } from "react";
 import { useState } from "react";
 import server from "./server";
 
 function Transfer({ address, setBalance }) {
   const [sendAmount, setSendAmount] = useState("");
+  const [inputRecipient, setInputRecipient] = useState("");
   const [recipient, setRecipient] = useState("");
 
   const setValue = (setter) => (evt) => setter(evt.target.value);
 
+  useEffect(() => {
+    setRecipient(inputRecipient.slice(2));
+  }, [inputRecipient]);
+
   async function transfer(evt) {
     evt.preventDefault();
-
     try {
       const {
         data: { balance },
@@ -18,6 +23,7 @@ function Transfer({ address, setBalance }) {
         amount: parseInt(sendAmount),
         recipient,
       });
+      console.log("log recipient when transfer: " + recipient);
       setBalance(balance);
     } catch (ex) {
       alert(ex.response.data.message);
@@ -40,9 +46,9 @@ function Transfer({ address, setBalance }) {
       <label>
         Recipient
         <input
-          placeholder="Type an address, for example: 0x2"
-          value={recipient}
-          onChange={setValue(setRecipient)}
+          placeholder="Type an address, for example: 0x..."
+          value={inputRecipient}
+          onChange={setValue(setInputRecipient)}
         ></input>
       </label>
 
