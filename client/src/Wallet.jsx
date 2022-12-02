@@ -1,7 +1,7 @@
 import server from "./server";
 
 import * as secp from "ethereum-cryptography/secp256k1";
-import { toHex } from "ethereum-cryptography/utils";
+import { toHex, utf8ToBytes } from "ethereum-cryptography/utils";
 import { keccak256 } from "ethereum-cryptography/keccak";
 
 function Wallet({
@@ -9,26 +9,22 @@ function Wallet({
   setAddress,
   balance,
   setBalance,
-  privateKey,
-  setPrivateKey,
+  signature,
+  signatureBrute,
+  setSignatureBrute,
 }) {
-  // async function onChange(evt) {
-  //   const address = evt.target.value;
-  //   setAddress(address);
-  //   if (address) {
-  //     const {
-  //       data: { balance },
-  //     } = await server.get(`balance/${address}`);
-  //     setBalance(balance);
-  //   } else {
-  //     setBalance(0);
-  //   }
-  // }
+  function hashMessage(message) {
+    const bytes = utf8ToBytes(message);
+    const hash = keccak256(bytes);
+    return hash;
+  }
 
   async function onChange(evt) {
-    const privateKey = evt.target.value;
-    setPrivateKey(privateKey);
-    const address = toHex(keccak256(secp.getPublicKey(privateKey)).slice(-20));
+    const signatureBrute = evt.target.value;
+    setSignatureBrute(signatureBrute);
+    signature = new Uint8Array(signatureBrute);
+    recoverKey("test", signature, 1);
+    const address = recoverKeyFormated;
     setAddress(address);
     if (address) {
       const {
@@ -40,24 +36,25 @@ function Wallet({
     }
   }
 
+  async function recoverKey(message, signature, recoveryBit) {
+    console.log("--- RECOVERKEY ---");
+    const recoverKey = secp.recoverPublicKey(
+      hashMessage("test"),
+      signature,
+      recoveryBit
+    );
+    const recoverKeyFormated = "0x" + toHex(keccak256(recoverKey).slice(-20));
+    return recoverKeyFormated;
+  }
+
   return (
     <div className="container wallet">
       <h1>Your Wallet</h1>
-
-      {/* <label>
-        Wallet Address
-        <input
-          placeholder="Type an address, for example: 0x1"
-          value={address}
-          onChange={onChange}
-        ></input>
-      </label> */}
-
       <label>
-        Private Key
+        Signature
         <input
-          placeholder="Type a private key..."
-          value={privateKey}
+          placeholder="Enter signature (computed offline)..."
+          value={signature}
           onChange={onChange}
         ></input>
       </label>
